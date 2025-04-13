@@ -116,6 +116,9 @@
             <button type="submit">Anmelden</button>
         </form>
         <div id="errorMessage" class="error-message"></div>
+        <div style="margin-top:20px;text-align:center;">
+            <a href="register.html" style="color:#4CAF50;">Noch kein Konto? Registrieren</a>
+        </div>
     </div>
     
     <div class="user-list">
@@ -127,75 +130,35 @@
         </ul>
     </div>
 
-    <script>
+    <script type="module">
+        import { login, checkAuth } from './js/authService.js';
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
-            
+            errorMessage.style.display = 'none';
             try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Speichere die Session-ID im localStorage
-                    localStorage.setItem('sessionId', data.sessionId);
-                    localStorage.setItem('username', data.username);
-                    
-                    // Weiterleitung zur Spielseite
-                    window.location.href = '/game.html';
-                } else {
-                    // Zeige Fehlermeldung
-                    errorMessage.textContent = data.message || 'Anmeldung fehlgeschlagen';
-                    errorMessage.style.display = 'block';
-                }
+                await login(username, password);
+                window.location.href = '/game.html';
             } catch (error) {
-                console.error('Fehler bei der Anmeldung:', error);
-                errorMessage.textContent = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+                errorMessage.textContent = error.message || 'Anmeldung fehlgeschlagen';
                 errorMessage.style.display = 'block';
             }
         });
-        
-        // Überprüfe, ob bereits eine Session existiert
-        async function checkSession() {
-            const sessionId = localStorage.getItem('sessionId');
-            
-            if (sessionId) {
-                try {
-                    const response = await fetch('/api/check-session', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ sessionId })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        // Session ist gültig, leite zur Spielseite weiter
-                        window.location.href = '/game.html';
-                    }
-                } catch (error) {
-                    console.error('Fehler bei der Session-Überprüfung:', error);
-                    // Bei einem Fehler die Session löschen
-                    localStorage.removeItem('sessionId');
-                    localStorage.removeItem('username');
+
+        // Überprüfe die Authentifizierung beim Laden der Seite
+        (async function() {
+            try {
+                const user = await checkAuth();
+                if (user) {
+                    window.location.href = '/game.html';
                 }
+            } catch (error) {
+                // Bei Fehler auf Login-Seite bleiben
             }
-        }
-        
-        // Überprüfe die Session beim Laden der Seite
-        checkSession();
+        })();
     </script>
 </body>
 </html>

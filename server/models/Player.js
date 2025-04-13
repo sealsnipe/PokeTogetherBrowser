@@ -105,17 +105,7 @@ module.exports = (sequelize) => {
 
     // Sequelize Hooks für automatische Aktionen
     hooks: {
-      beforeCreate: async (player, options) => {
-        if (player.password_hash) {
-          if (!player.password_hash.match(/^\$2[aby]\$\d{2}\$/)) {
-             player.password_hash = await bcrypt.hash(player.password_hash, SALT_ROUNDS);
-          } else {
-             console.warn(`Attempted to hash an already hashed password during creation for user ${player.username}. Ensure plaintext password is provided.`);
-          }
-        } else {
-           throw new Error("Password cannot be empty.");
-        }
-      },
+      // beforeCreate Hook entfernt, da Hashing jetzt in init.js erfolgt
       beforeUpdate: async (player, options) => {
         if (player.changed('password_hash') && player.password_hash) {
           if (!player.password_hash.match(/^\$2[aby]\$\d{2}\$/)) {
@@ -145,9 +135,12 @@ module.exports = (sequelize) => {
       return false;
     }
     try {
-      return await bcrypt.compare(password, this.password_hash);
+      console.log(`[AUTH DEBUG] checkPassword for user ${this.username}: Comparing provided password "${password}" with hash "${this.password_hash}"`); // DEBUG LOG
+      const result = await bcrypt.compare(password, this.password_hash);
+      console.log(`[AUTH DEBUG] bcrypt.compare result: ${result}`); // DEBUG LOG
+      return result;
     } catch (error) {
-      console.error(`Error comparing password for user ${this.username}:`, error);
+      console.error(`[AUTH DEBUG] Error comparing password for user ${this.username}:`, error); // DEBUG LOG
       return false;
     }
   };

@@ -16,29 +16,22 @@ let onDisconnectCallback = (reason) => console.warn('Disconnected:', reason);
 /**
  * Stellt die Verbindung zum Socket.IO-Server her.
  * @param {string} serverUrl - Die URL des Socket.IO-Servers.
- * @param {string} sessionId - Die Session-ID zur Authentifizierung.
- * @param {string} username - Der Benutzername (wird aktuell nicht für Auth verwendet, aber gut zu haben).
+ * @param {string} serverUrl - Die URL des Socket.IO-Servers.
  */
-export function connectToServer(serverUrl, sessionId, username) {
+export function connectToServer(serverUrl) { // sessionId und username entfernt
     if (socket) {
         console.warn("Socket already connected.");
         return;
     }
 
-    // Überprüfe, ob eine Session existiert
-    if (!sessionId || !username) {
-        console.error('Keine gültige Session gefunden. Umleitung zum Login.');
-        window.location.href = '/login.html'; // Zurück zur Login-Seite
-        return;
-    }
-
-    console.log(`Versuche Verbindung zu ${serverUrl} mit SessionID: ${sessionId}`);
+    console.log(`Versuche Verbindung zu ${serverUrl}...`);
 
     // io() ist global verfügbar durch das Skript im HTML
+    // Das httpOnly-Cookie wird vom Browser automatisch mitgesendet.
+    // Wir müssen das Token NICHT mehr explizit im 'auth'-Objekt senden.
     socket = io(serverUrl, {
-        auth: {
-            sessionId: sessionId
-        }
+        // auth: {}, // Kann leer bleiben oder ganz weggelassen werden
+        withCredentials: true // Wichtig, damit Cookie gesendet wird
     });
 
     // --- Event Listeners ---
@@ -51,11 +44,10 @@ export function connectToServer(serverUrl, sessionId, username) {
 
     socket.on('connect_error', (error) => {
         console.error('Verbindungsfehler:', error.message);
-        if (error.message === 'Nicht authentifiziert' || error.message === 'Invalid session') {
+        if (error.message === 'Nicht authentifiziert') { // Teste auf Auth-Fehler
             // Session ist ungültig oder abgelaufen
             console.error('Authentifizierung fehlgeschlagen. Session ungültig.');
-            localStorage.removeItem('sessionId');
-            localStorage.removeItem('username');
+            // localStorage wird nicht mehr für Auth verwendet, daher keine Bereinigung nötig
             window.location.href = '/login.html';
         }
         // Hier könnten weitere Fehlerbehandlungen implementiert werden (z.B. Server nicht erreichbar)

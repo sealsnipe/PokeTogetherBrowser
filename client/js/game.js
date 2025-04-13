@@ -7,22 +7,36 @@ import { initRenderer, setPlayers as setRendererPlayers, setMyId as setRendererM
 import { initChat, displayMessage as displayChatMessage, displaySystemMessage as displayChatSystemMessage } from './modules/chat.js'; // displayMessage & displaySystemMessage importiert (mit Alias)
 import { initInventory, setInventory } from './modules/inventory.js';
 import { initPokemon, setTeam, setStorage } from './modules/pokemon.js';
+import { checkAuth, logout as performLogout } from './authService.js'; // Importiere checkAuth und logout
 
 // --- Globale Zustandsvariablen ---
 let players = {}; // Wird vom Server initialisiert und aktualisiert
 
 // --- Initialisierung beim Laden des DOM ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Mache die Funktion async
     console.log('DOM fully loaded. Initializing game...');
 
-    // 1. Session-Daten holen
-    const sessionId = localStorage.getItem('sessionId');
-    const username = localStorage.getItem('username');
+    // 1. Authentifizierung prüfen
+    let currentUser = null;
+    try {
+        console.log("[GAME DEBUG] Calling checkAuth()..."); // DEBUG LOG
+        currentUser = await checkAuth(); // Verwende checkAuth aus authService
+        console.log("[GAME DEBUG] checkAuth() returned:", currentUser); // DEBUG LOG
+        if (!currentUser) {
+            console.log("[GAME DEBUG] User not authenticated or checkAuth failed. Redirecting to login."); // DEBUG LOG
+            window.location.href = '/login.html';
+            return; // Verhindere weitere Initialisierung
+        }
+        console.log("[GAME DEBUG] Authenticated as:", currentUser.username); // DEBUG LOG
+    } catch (error) {
+        console.error("Fehler bei der Authentifizierungsprüfung:", error);
+        window.location.href = '/login.html'; // Bei Fehler zum Login umleiten
+        return;
+    }
 
-    // Wenn keine Session-Daten vorhanden sind, leitet der socketHandler bereits um.
-    // Wir können hier aber den Benutzernamen schon mal anzeigen.
+    // UI initialisieren und Benutzernamen anzeigen
     initUIManager(); // UI Manager zuerst initialisieren für DOM-Referenzen
-    updateUsername(username);
+    updateUsername(currentUser.username); // Verwende den Namen aus checkAuth
 
     // 2. Module initialisieren
     const canvasElement = document.getElementById('gameCanvas');
@@ -60,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Verbindung zum Server herstellen
     // TODO: Server-URL aus Konfiguration oder Umgebungsvariable holen
-    connectToServer('http://localhost:3001', sessionId, username);
+    connectToServer('http://localhost:3001'); // Keine sessionId/username mehr nötig, Cookie wird automatisch gesendet
 
     // 5. Spiel-Loop starten (nach erfolgreicher Verbindung in handleInit)
     // startRendering(); // Wird jetzt in handleInit gestartet
@@ -90,7 +104,7 @@ function handleInit(serverPlayers, ownId) {
 
     // TODO: Lade hier die tatsächlichen Inventar- und Pokémon-Daten vom Server
     // Beispiel:
-    // fetch('/api/player-data', { headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` } })
+    // fetch('/api/player-data') // Keine Auth-Header mehr nötig, Cookie wird automatisch gesendet
     //   .then(res => res.json())
     //   .then(data => {
     //      setInventory(data.inventory);
@@ -183,49 +197,19 @@ function handleSaveSettings(resolution) {
 /**
  * Wird aufgerufen, wenn der Benutzer auf "Abmelden" klickt.
  */
-function handleLogout() {
+async function handleLogout() { // Mache die Funktion async
     console.log("Logout requested by user.");
-    const sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-        console.warn("Keine Session-ID für Logout gefunden.");
-        forceLogout(); // Trotzdem versuchen aufzuräumen
-        return;
+    stopRendering(); // Rendering stoppen
+    cleanupPlayerControls(); // Event Listener entfernen
+    try {
+        await performLogout(); // Rufe die zentrale Logout-Funktion auf
+        // Die Weiterleitung geschieht innerhalb von performLogout
+    } catch (error) {
+        // Fehler wurde bereits in performLogout geloggt, Weiterleitung erfolgt trotzdem
     }
-
-    // Sende Logout-Anfrage an den Server (optional, aber gut für serverseitiges Aufräumen)
-    fetch('/api/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log("Server logout successful.");
-        } else {
-            console.warn("Server logout failed:", data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error during server logout request:', error);
-    })
-    .finally(() => {
-        // Immer lokales Aufräumen und Umleitung durchführen
-        forceLogout();
-    });
 }
 
-/**
- * Führt das lokale Aufräumen und die Umleitung zum Login durch.
- */
-function forceLogout() {
-    stopRendering();
-    cleanupPlayerControls();
-    localStorage.removeItem('sessionId');
-    localStorage.removeItem('username');
-    console.log("Local session cleared. Redirecting to login.");
-    window.location.href = '/login.html';
-}
+// forceLogout Funktion wird nicht mehr benötigt, da die Logik in authService.logout liegt
 
 // --- Globale Aufräumfunktion (optional) ---
 window.addEventListener('beforeunload', () => {

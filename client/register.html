@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registrieren - Multiplayer Wiese</title>
+    <style>
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: Arial, sans-serif; background-color: #2A2A2A; color: white; }
+        .register-container { background-color: #333; padding: 30px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); width: 320px; }
+        h1 { text-align: center; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #555; border-radius: 4px; background-color: #444; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background-color: #45a049; }
+        .error-message { color: #ff6b6b; margin-top: 15px; text-align: center; display: none; }
+        .success-message { color: #4CAF50; margin-top: 15px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1>Registrieren</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Benutzername:</label>
+                <input type="text" id="username" name="username" required>
+                <div id="usernameError" class="error-message" style="text-align: left; margin-top: 5px;"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">E-Mail:</label>
+                <input type="email" id="email" name="email" required>
+                <div id="emailError" class="error-message" style="text-align: left; margin-top: 5px;"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Passwort:</label>
+                <input type="password" id="password" name="password" required>
+                <div id="passwordError" class="error-message" style="text-align: left; margin-top: 5px;"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Passwort bestätigen:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <div id="confirmPasswordError" class="error-message" style="text-align: left; margin-top: 5px;"></div>
+            </div>
+            <button type="submit">Registrieren</button>
+        </form>
+        <div id="generalError" class="error-message"></div> {/* Umbenannt von errorMessage zu generalError */}
+        <div id="successMessage" class="success-message"></div>
+        <div style="margin-top:20px;text-align:center;">
+            <a href="login.html" style="color:#4CAF50;">Zurück zum Login</a>
+        </div>
+    </div>
+    <script type="module">
+        import { register } from './js/authService.js';
+        const form = document.getElementById('registerForm');
+        const generalError = document.getElementById('generalError'); // Umbenannt
+        const successMessage = document.getElementById('successMessage');
+        const errorElements = { // Objekt für einfachen Zugriff auf Fehler-Divs
+            username: document.getElementById('usernameError'),
+            email: document.getElementById('emailError'),
+            password: document.getElementById('passwordError'),
+            confirmPassword: document.getElementById('confirmPasswordError'),
+            general: generalError
+        };
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            // Alle Fehlermeldungen zurücksetzen
+            Object.values(errorElements).forEach(el => {
+                if(el) {
+                    el.textContent = '';
+                    el.style.display = 'none';
+                }
+            });
+            successMessage.style.display = 'none';
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Client-seitige Prüfung
+            if (password !== confirmPassword) {
+                errorElements.confirmPassword.textContent = 'Passwörter stimmen nicht überein.';
+                errorElements.confirmPassword.style.display = 'block';
+                return;
+            }
+
+            try {
+                await register({ username, email, password, confirmPassword });
+                successMessage.textContent = 'Registrierung erfolgreich! Du wirst weitergeleitet...';
+                successMessage.style.display = 'block';
+                setTimeout(() => { window.location.href = '/game.html'; }, 1200);
+            } catch (error) {
+                console.error('Registrierungs-Fehler:', error);
+                let errorMessageText = error.message || 'Ein unbekannter Fehler ist aufgetreten.';
+                let handled = false;
+
+                // Versuche, Validierungsfehler vom Server zu parsen
+                try {
+                    const errorData = JSON.parse(errorMessageText);
+                    if (Array.isArray(errorData)) {
+                        errorData.forEach(err => {
+                            const errorElement = errorElements[err.param];
+                            if (errorElement) {
+                                errorElement.textContent = err.msg;
+                                errorElement.style.display = 'block';
+                                handled = true;
+                            }
+                        });
+                        // Wenn Fehler geparst wurden, aber keinem Feld zugeordnet, zeige sie allgemein an
+                        if (handled && !errorData.some(err => !errorElements[err.param])) {
+                           // Alle Fehler wurden Feldern zugeordnet
+                        } else if (handled) {
+                            // Einige Fehler konnten keinem Feld zugeordnet werden
+                            const generalMsg = errorData.filter(err => !errorElements[err.param]).map(e => e.msg).join(' ');
+                            errorElements.general.textContent = generalMsg;
+                            errorElements.general.style.display = 'block';
+                        } else {
+                             // Array geparst, aber keine bekannten 'param'-Felder gefunden
+                             errorElements.general.textContent = "Validierungsfehler aufgetreten.";
+                             errorElements.general.style.display = 'block';
+                             handled = true;
+                        }
+
+                    } else {
+                         // JSON, aber kein Array
+                         errorElements.general.textContent = errorMessageText;
+                         errorElements.general.style.display = 'block';
+                         handled = true;
+                    }
+                } catch (parseError) {
+                    // Kein valides JSON
+                    errorElements.general.textContent = errorMessageText;
+                    errorElements.general.style.display = 'block';
+                    handled = true;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

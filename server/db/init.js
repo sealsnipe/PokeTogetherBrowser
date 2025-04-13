@@ -33,6 +33,7 @@ async function seedDatabase() {
     
     // Testbenutzer einfügen
     const testUsers = [
+      // Hashe die Passwörter hier, bevor sie an bulkCreate übergeben werden
       { username: 'test1', password_hash: await bcrypt.hash('test', 10) },
       { username: 'test2', password_hash: await bcrypt.hash('test', 10) },
       { username: 'test3', password_hash: await bcrypt.hash('test', 10) }
