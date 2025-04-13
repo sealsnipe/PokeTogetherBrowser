@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiplayer Wiese</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Multiplayer Wiese</h1>
+        <div class="user-info">
+            <span class="username" id="currentUser">Nicht angemeldet</span>
+            <div class="btn-group">
+                <button class="settings-btn" id="settingsBtn" title="Einstellungen">⚙</button>
+                <button class="logout-btn" id="logoutBtn">Abmelden</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="controls">
+        Steuerung: Pfeiltasten oder WASD | <span id="runStatus">Laufen: AUS (Shift drücken zum Umschalten)</span>
+    </div>
+
+    <div class="game-layout">
+        <div id="inventory">
+            <div class="inventory-header">
+                <h2>Inventar</h2>
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label for="sortBy">Sortieren:</label>
+                        <select id="sortBy">
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="type">Typ</option>
+                            <option value="quantity-desc">Anzahl (Hoch-Niedrig)</option>
+                            <option value="quantity-asc">Anzahl (Niedrig-Hoch)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterType">Typ:</label>
+                        <select id="filterType">
+                            <option value="all">Alle</option>
+                            <option value="ball">Bälle</option>
+                            <option value="hold">Halte-Items</option>
+                            <option value="medicine">Erste Hilfe</option>
+                            <option value="quest">Quest</option>
+                            <option value="tm">TM</option>
+                            <option value="hm">VM</option>
+                            <option value="berry">Beeren</option>
+                            <option value="other">Sonstiges</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="inventory-content" id="inventoryItems">
+                <!-- Inventar-Items werden hier dynamisch eingefügt -->
+            </div>
+        </div>
+
+        <div class="game-container" id="gameContainer">
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
+        </div>
+
+        <div id="pokemon-team">
+            <div class="team-header">
+                <div class="team-tabs">
+                    <div class="team-tab active" id="teamTab">Team</div>
+                    <div class="team-tab" id="storageTab">Lager</div>
+                </div>
+            </div>
+            <div class="team-content" id="teamContent">
+                <!-- Pokémon-Slots werden hier dynamisch eingefügt -->
+            </div>
+            <div class="team-content" id="storageContent" style="display: none;">
+                <!-- Lager-Pokémon werden hier dynamisch eingefügt -->
+            </div>
+
+            <!-- Pokémon-Info-Panel -->
+            <div id="pokemon-info-panel">
+                <div class="info-close">&times;</div>
+                <div class="info-header">
+                    <div class="info-icon"></div>
+                    <div class="info-title">
+                        <div class="info-name"></div>
+                        <div class="info-type"></div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-section-title">Grunddaten</div>
+                    <div class="info-stat">
+                        <span class="info-stat-name">Level</span>
+                        <span class="info-stat-value" id="info-level"></span>
+                    </div>
+                    <div class="info-stat">
+                        <span class="info-stat-name">HP</span>
+                        <span class="info-stat-value" id="info-hp"></span>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-section-title">Schwächen</div>
+                    <div class="weakness-list" id="weakness-list-x2">
+                        <!-- 2x Schwächen werden hier eingefügt -->
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-section-title">Extreme Schwächen (4x)</div>
+                    <div class="weakness-list" id="weakness-list-x4">
+                        <!-- 4x Schwächen werden hier eingefügt -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Options Modal -->
+    <div id="optionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Spieleinstellungen</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="option-group">
+                <label class="option-label" for="resolutionSelect">Auflösung:</label>
+                <select id="resolutionSelect">
+                    <option value="400x400">400 x 400</option>
+                    <option value="500x500" selected>500 x 500</option>
+                    <option value="600x600">600 x 600</option>
+                    <option value="800x600">800 x 600</option>
+                    <option value="1024x768">1024 x 768</option>
+                    <option value="1280x720">1280 x 720 (HD)</option>
+                </select>
+            </div>
+            <button class="save-btn" id="saveOptionsBtn">Speichern</button>
+        </div>
+    </div>
+
+    <div class="interaction-container">
+        <div id="chatContainer">
+            <div id="chatHeader">
+                <h2>Chat</h2>
+            </div>
+            <div id="chatMessages"></div>
+            <div id="chatInputContainer">
+                <input type="text" id="chatInput" placeholder="Nachricht eingeben..." autocomplete="off">
+                <button id="sendButton">Senden</button>
+            </div>
+        </div>
+
+        <div id="playersList">
+            <h2>Aktive Spieler</h2>
+            <div id="playersContainer"></div>
+        </div>
+    </div>
+
+    <!-- Ausgelagerte JavaScript-Module -->
+    <script src="js/config.js" type="module"></script>
+    <script src="js/data/typeInfo.js" type="module"></script>
+    <script src="js/data/exampleData.js" type="module"></script> <!-- Nur wenn benötigt -->
+    <script src="js/utils.js" type="module"></script>
+    <script src="js/modules/socketHandler.js" type="module"></script>
+    <script src="js/modules/uiManager.js" type="module"></script>
+    <script src="js/modules/player.js" type="module"></script>
+    <script src="js/modules/renderer.js" type="module"></script>
+    <script src="js/modules/chat.js" type="module"></script>
+    <script src="js/modules/inventory.js" type="module"></script>
+    <script src="js/modules/pokemon.js" type="module"></script>
+    <script src="js/game.js" type="module"></script> <!-- Haupt-Skript -->
+
+</body>
+</html>

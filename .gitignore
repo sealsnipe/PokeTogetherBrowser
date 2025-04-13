@@ -1,0 +1,38 @@
+# Abhängigkeiten
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Umgebungsvariablen
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Datenbank
+*.sqlite
+*.sqlite3
+
+# Verzeichnisse
+dist/
+build/
+coverage/
+
+# IDE-Dateien
+.idea/
+.vscode/
+*.swp
+*.swo

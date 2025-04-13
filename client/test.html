@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiplayer Wiese</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #2A2A2A; /* Dunkelgrau/Anthrazit */
+            color: white;
+        }
+        canvas {
+            border: 1px solid #000;
+            margin: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Multiplayer Wiese</h1>
+    <div id="controls" style="margin-bottom: 10px; color: #aaa; font-size: 14px;">
+        Steuerung: Pfeiltasten oder WASD | <span id="runStatus">Laufen: AUS (Shift drücken zum Umschalten)</span>
+    </div>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+
+    <script>
+        const socket = io('http://localhost:3001');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let players = {};
+        let myId = null;
+
+        socket.on('init', (serverPlayers) => {
+            players = serverPlayers;
+            myId = socket.id;
+            console.log('Connected with ID:', myId);
+        });
+
+        socket.on('player-joined', ({ id, pos }) => {
+            players[id] = pos;
+            console.log('Player joined:', id);
+        });
+
+        socket.on('player-moved', ({ id, pos }) => {
+            players[id] = pos;
+        });
+
+        socket.on('player-left', (id) => {
+            delete players[id];
+            console.log('Player left:', id);
+        });
+
+        // Spieler-Status für Rennen
+        let isRunning = false;
+        let baseSpeed = 5;
+        let runningSpeed = 10;
+
+        // Tastendruck-Handler
+        window.addEventListener('keydown', (e) => {
+            if (!myId) return;
+            const pos = { ...(players[myId] || { x: 250, y: 250 }) };
+
+            // Geschwindigkeit basierend auf Renn-Status
+            const step = isRunning ? runningSpeed : baseSpeed;
+
+            // Pfeiltasten und WASD-Steuerung
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') pos.y -= step;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') pos.y += step;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') pos.x -= step;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') pos.x += step;
+
+            // Shift-Taste zum Umschalten des Renn-Modus
+            if (e.key === 'Shift') {
+                isRunning = !isRunning;
+                console.log('Renn-Modus:', isRunning ? 'Ein' : 'Aus');
+
+                // Aktualisiere die Anzeige des Renn-Status
+                const runStatus = document.getElementById('runStatus');
+                runStatus.textContent = `Laufen: ${isRunning ? 'EIN' : 'AUS'} (Shift drücken zum Umschalten)`;
+                runStatus.style.color = isRunning ? '#4CAF50' : '#aaa';
+            }
+
+            // Begrenze die Position auf den Spielbereich
+            pos.x = Math.max(0, Math.min(pos.x, 480));
+            pos.y = Math.max(0, Math.min(pos.y, 480));
+
+            socket.emit('move', pos);
+            players[myId] = pos;
+        });
+
+        // Erstelle ein Array für die Erdflecken mit festen Positionen
+        const dirtPatches = [
+            { x: 50, y: 50, radius: 25 },
+            { x: 150, y: 120, radius: 20 },
+            { x: 320, y: 80, radius: 15 },
+            { x: 420, y: 180, radius: 30 },
+            { x: 80, y: 250, radius: 18 },
+            { x: 200, y: 350, radius: 22 },
+            { x: 350, y: 420, radius: 28 },
+            { x: 450, y: 320, radius: 15 },
+            { x: 250, y: 200, radius: 35 },
+            { x: 120, y: 400, radius: 20 },
+            { x: 400, y: 50, radius: 18 },
+            { x: 280, y: 300, radius: 25 },
+            { x: 180, y: 220, radius: 15 },
+            { x: 380, y: 250, radius: 20 },
+            { x: 300, y: 150, radius: 22 }
+        ];
+
+        // Erstelle ein Array für die Grashalme mit festen Positionen
+        const grassBlades = [];
+
+        // Verwende feste Positionen für die Grashalme
+        // Wir erstellen ein Raster und fügen leichte Variationen hinzu
+        for (let x = 0; x < 500; x += 25) {
+            for (let y = 0; y < 500; y += 25) {
+                // Überspringe Bereiche, die zu nah an Erdflecken sind
+                const tooCloseToPatches = dirtPatches.some(patch => {
+                    const dx = x - patch.x;
+                    const dy = y - patch.y;
+                    return Math.sqrt(dx * dx + dy * dy) < patch.radius;
+                });
+
+                if (!tooCloseToPatches) {
+                    // Füge 1-3 Grashalme pro Rasterpunkt hinzu
+                    const count = 1 + Math.floor((x * y) % 3);
+                    for (let i = 0; i < count; i++) {
+                        // Verwende eine deterministische Variation
+                        const offsetX = ((x + y + i) % 10) - 5;
+                        const offsetY = ((x * y + i) % 10) - 5;
+                        grassBlades.push({
+                            x: x + offsetX,
+                            y: y + offsetY,
+                            height: 3 + ((x + y) % 5)
+                        });
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            // Zeichne den Hintergrund (Wiese)
+            ctx.fillStyle = '#4CAF50'; // Grün für die Wiese
+            ctx.fillRect(0, 0, 500, 500);
+
+            // Zeichne die Erdflecken
+            dirtPatches.forEach(patch => {
+                ctx.fillStyle = '#8B4513'; // Braun für die Erde
+                ctx.beginPath();
+                ctx.ellipse(patch.x, patch.y, patch.radius, patch.radius * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Zeichne die Grashalme
+            ctx.strokeStyle = '#8BC34A'; // Helleres Grün für Grashalme
+            grassBlades.forEach(blade => {
+                ctx.beginPath();
+                ctx.moveTo(blade.x, blade.y);
+                ctx.lineTo(blade.x, blade.y - blade.height);
+                ctx.stroke();
+            });
+
+            // Zeichne die Spieler
+            Object.entries(players).forEach(([id, pos]) => {
+                const isCurrentPlayer = id === myId;
+
+                // Füge einen Schatten hinzu
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(pos.x + 2, pos.y + 2, 20, 20);
+
+                // Zeichne den Spieler
+                ctx.fillStyle = isCurrentPlayer ? '#2196F3' : '#F44336'; // Blau für eigenen Spieler, Rot für andere
+                ctx.fillRect(pos.x, pos.y, 20, 20);
+
+                // Zeige Renn-Effekt für den eigenen Spieler an, wenn er rennt
+                if (isCurrentPlayer && isRunning) {
+                    // Bewegungslinien hinter dem Spieler
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 2;
+
+                    // Zufällige Bewegungslinien
+                    for (let i = 0; i < 3; i++) {
+                        const offsetX = (Math.random() * 10) - 5;
+                        const offsetY = (Math.random() * 10) - 5;
+                        const length = 5 + Math.random() * 10;
+
+                        ctx.beginPath();
+                        ctx.moveTo(pos.x + 10 + offsetX, pos.y + 10 + offsetY);
+                        ctx.lineTo(pos.x + 10 + offsetX - length, pos.y + 10 + offsetY - length);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>

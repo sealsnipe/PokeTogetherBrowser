@@ -1,0 +1,735 @@
+body {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-family: Arial, sans-serif;
+            background-color: #2A2A2A; /* Dunkelgrau/Anthrazit */
+            color: white;
+            margin: 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: calc(100% - 10px);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .username {
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #logoutButton {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        #logoutButton:hover {
+            background-color: #d32f2f;
+        }
+
+        .settings-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .settings-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        .logout-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .game-layout {
+            display: flex;
+            width: 100%;
+            margin: 0;
+            gap: 10px;
+        }
+
+        #pokemon-team {
+            width: 200px;
+            background-color: #333;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            margin-left: 10px;
+            position: relative;
+        }
+
+        #pokemon-info-panel {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            border-radius: 0 8px 8px 0;
+            padding: 15px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: none;
+            overflow-y: auto;
+        }
+
+        #pokemon-info-panel.active {
+            display: block;
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .info-title {
+            flex: 1;
+        }
+
+        .info-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .info-type {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .info-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .info-close:hover {
+            color: white;
+        }
+
+        .info-section {
+            margin-bottom: 15px;
+        }
+
+        .info-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2196F3;
+        }
+
+        .info-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .info-stat-name {
+            color: #aaa;
+        }
+
+        .info-stat-value {
+            font-weight: bold;
+        }
+
+        .weakness-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .weakness-item {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .weakness-item.x2 {
+            background-color: #F44336;
+        }
+
+        .weakness-item.x4 {
+            background-color: #D32F2F;
+        }
+
+        .weakness-icon {
+            margin-right: 3px;
+        }
+
+        .team-header {
+            padding: 10px 10px 0;
+            border-bottom: 1px solid #444;
+        }
+
+        .team-tabs {
+            display: flex;
+            margin-bottom: 0;
+        }
+
+        .team-tab {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            cursor: pointer;
+            background-color: #222;
+            border-radius: 4px 4px 0 0;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+
+        .team-tab.active {
+            background-color: #444;
+            font-weight: bold;
+        }
+
+        .team-tab:hover:not(.active) {
+            background-color: #333;
+        }
+
+        .team-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .pokemon-slot {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: #3a3a3a;
+            border-radius: 4px;
+            cursor: move;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .pokemon-slot:hover {
+            background-color: #444;
+        }
+
+        .pokemon-slot.dragging {
+            opacity: 0.5;
+        }
+
+        .pokemon-slot.drag-over {
+            border: 2px dashed #2196F3;
+        }
+
+        .pokemon-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #555;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .pokemon-details {
+            flex: 1;
+        }
+
+        .pokemon-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .pokemon-level {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .pokemon-hp {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        .hp-bar {
+            flex: 1;
+            height: 6px;
+            background-color: #555;
+            border-radius: 3px;
+            margin: 0 5px;
+            overflow: hidden;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 3px;
+        }
+
+        .hp-fill.yellow {
+            background-color: #FFC107;
+        }
+
+        .hp-fill.red {
+            background-color: #F44336;
+        }
+
+        .pokemon-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #444;
+            border-radius: 0 0 4px 4px;
+            z-index: 10;
+            display: none;
+        }
+
+        .pokemon-slot.active .pokemon-menu {
+            display: block;
+        }
+
+        .menu-option {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-option:hover {
+            background-color: #555;
+        }
+
+        .menu-option:first-child {
+            border-bottom: 1px solid #555;
+        }
+
+        .empty-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 56px;
+            background-color: #3a3a3a;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            color: #777;
+            font-style: italic;
+            border: 2px dashed #555;
+        }
+
+        #inventory {
+            width: 200px;
+            background-color: #333;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .inventory-header {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .inventory-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .filter-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .filter-group select {
+            background-color: #444;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 4px;
+            font-size: 12px;
+        }
+
+        .inventory-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background-color: #3a3a3a;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .inventory-item:hover {
+            background-color: #444;
+        }
+
+        .item-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #555;
+            border-radius: 4px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .item-type {
+            font-size: 10px;
+            color: #aaa;
+        }
+
+        .item-quantity {
+            font-size: 12px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .game-container {
+            position: relative;
+            margin: 0;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: block;
+        }
+
+
+
+        #controls {
+            margin-bottom: 10px;
+            color: #aaa;
+            font-size: 14px;
+            align-self: flex-start;
+        }
+
+        .interaction-container {
+            display: grid;
+            grid-template-columns: 7fr 1fr; /* Chat nimmt 7/8, Spielerliste 1/8 */
+            width: 100%;
+            margin-top: 10px;
+            gap: 0;
+            align-self: flex-start;
+        }
+
+        #chatContainer {
+            background-color: #333;
+            border-radius: 8px 0 0 8px;
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+            width: 100%;
+        }
+
+        #chatHeader {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        #chatHeader h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        #chatMessages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-break: break-word;
+        }
+
+        .chat-message.own {
+            align-self: flex-end;
+            background-color: #2196F3;
+        }
+
+        .chat-message.other {
+            align-self: flex-start;
+            background-color: #555;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 3px;
+            text-align: right;
+        }
+
+        #chatInputContainer {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #444;
+        }
+
+        #chatInput {
+            flex: 1;
+            background-color: #444;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: white;
+            margin-right: 10px;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
+        }
+
+        #sendButton {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        #sendButton:hover {
+            background-color: #0b7dda;
+        }
+
+        #playersList {
+            background-color: #333;
+            padding: 3px;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+            width: 100%;
+            border-left: 1px solid #444;
+            max-width: 80px;
+        }
+
+        #playersList h2 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        #playersContainer {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .player-item {
+            padding: 3px;
+            margin-bottom: 2px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            font-size: 9px;
+        }
+
+        .player-color {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 3px;
+            flex-shrink: 0;
+        }
+
+        .current-player {
+            background-color: rgba(33, 150, 243, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #333;
+            padding: 25px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .option-group {
+            margin-bottom: 20px;
+        }
+
+        .option-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            background-color: #444;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .save-btn:hover {
+            background-color: #45a049;
+        }

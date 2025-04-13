@@ -1,0 +1,30 @@
+{
+  "name": "poketogetherbrowser",
+  "version": "0.1.0",
+  "description": "Ein Multiplayer-Pokémon-Browser-Spiel",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pokemon",
+    "multiplayer",
+    "browser-game",
+    "socket.io"
+  ],
+  "author": "sealsnipe",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.17.1",
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.4.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiplayer Wiese</title>
+    <meta http-equiv="refresh" content="0;url=/login.html">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #2A2A2A;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weiterleitung...</h1>
+    <p>Sie werden zur Login-Seite weitergeleitet.</p>
+    <p>Falls die Weiterleitung nicht funktioniert, <a href="/login.html" style="color: #4CAF50;">klicken Sie hier</a>.</p>
+
+    <script>
+        // Überprüfe, ob bereits eine Session existiert
+        const sessionId = localStorage.getItem('sessionId');
+
+        if (sessionId) {
+            // Wenn eine Session existiert, überprüfe sie
+            fetch('/api/check-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ sessionId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Session ist gültig, leite zur Spielseite weiter
+                    window.location.href = '/game.html';
+                } else {
+                    // Session ist ungültig, leite zur Login-Seite weiter
+                    window.location.href = '/login.html';
+                }
+            })
+            .catch(error => {
+                console.error('Fehler bei der Session-Überprüfung:', error);
+                window.location.href = '/login.html';
+            });
+        } else {
+            // Keine Session, leite zur Login-Seite weiter
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html>
