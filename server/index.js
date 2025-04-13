@@ -159,8 +159,8 @@ webApp.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Suche den Benutzer in der Datenbank
-    const player = await db.Player.findOne({
+    // Suche den Benutzer in der Datenbank und schließe den Passwort-Hash mit ein
+    const player = await db.Player.scope('withPassword').findOne({
       where: { username: username }
     });
 
