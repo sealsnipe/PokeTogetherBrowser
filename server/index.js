@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const db = require('./models');
 const { initDatabase } = require('./db/init');
@@ -17,6 +18,10 @@ const io = new Server(httpServer, { cors: { origin: '*' } });
 
 // Express-App für Webserver
 const webApp = express();
+
+
+// Cookie-Parser Middleware (wichtig für JWT-Cookie Handling)
+webApp.use(cookieParser());
 
 // Middleware für JSON-Parsing
 webApp.use(express.json());
