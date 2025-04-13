@@ -56,10 +56,22 @@ webApp.use(express.static(clientPath));
 // --- ENTFERNT: Alte io.use Middleware für Session ID Check ---
 io.use(async (socket, next) => { // <-- Integriert: Neue JWT Auth Middleware für Sockets
   try {
-    const token = socket.handshake.auth.token; // Token aus Client 'auth' Objekt holen
+    // Token aus Cookie extrahieren (Client sendet Token als httpOnly Cookie)
+    let token;
+    const cookieHeader = socket.handshake.headers.cookie;
+    if (cookieHeader) {
+      // Cookie-String parsen (z.B. "token=abc123; foo=bar")
+      const cookies = Object.fromEntries(
+        cookieHeader.split(';').map(c => {
+          const [k, ...v] = c.trim().split('=');
+          return [k, decodeURIComponent(v.join('='))];
+        })
+      );
+      token = cookies.token;
+    }
     if (!token) {
-      console.warn(`Socket Auth fehlgeschlagen (${socket.id}): Kein Token.`);
-      return next(new Error('Nicht authentifiziert: Kein Token')); // Fehler an Client
+      console.warn(`Socket Auth fehlgeschlagen (${socket.id}): Kein Token im Cookie.`);
+      return next(new Error('Nicht authentifiziert: Kein Token im Cookie')); // Fehler an Client
     }
 
     // Token verifizieren (Signatur & Ablaufdatum)
@@ -113,10 +125,13 @@ io.on('connection', (socket) => { // <-- Angepasst
   io.sockets.sockets.forEach(connectedSocket => {
       if (connectedSocket.player && connectedSocket.id !== socket.id) { // Schließe den neuen Spieler selbst aus
           // TODO: Hole die aktuelle Position des connectedSocket.player (z.B. aus DB oder einem Cache)
+          // Hier: Dummy-Position (kann später aus DB/Caching geholt werden)
           currentPlayersData[connectedSocket.id] = {
               username: connectedSocket.player.username,
               id: connectedSocket.player.id,
-              // position: { x: ..., y: ..., isRunning: ... } // Beispielposition
+              x: 20, // Default-Position, bis echte Position geladen wird
+              y: 20,
+              isRunning: false
           };
       }
   });
@@ -126,11 +141,9 @@ io.on('connection', (socket) => { // <-- Angepasst
           currentPlayersData[socket.id] = {
               username: player.username,
               id: player.id,
-              position: {
-                  x: player.position_x || 20,
-                  y: player.position_y || 20,
-                  isRunning: player.is_running || false
-              }
+              x: player.position_x || 20,
+              y: player.position_y || 20,
+              isRunning: player.is_running || false
           };
           socket.emit('init', currentPlayersData); // Sende Init-Daten an den neuen Spieler
       }

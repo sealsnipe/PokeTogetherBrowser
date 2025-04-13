@@ -1,3 +1,62 @@
+## Einführung für neue Bearbeiter
+
+Dieses Ticket befasst sich mit der Erweiterung und Erstellung von Datenmodellen für die Spielstand-Speicherung im PokeTogetherBrowser-Projekt. Das Projekt verwendet Node.js, Express, Sequelize (ORM) und eine relationale Datenbank (wahrscheinlich PostgreSQL oder MySQL).
+
+**Wichtige Konzepte:**
+
+*   **Sequelize:** Ein ORM (Object-Relational Mapper), der die Interaktion mit der Datenbank vereinfacht. Modelle definieren Tabellen und Beziehungen.
+*   **Datenbank-Migrationen:** Änderungen an der Datenbankstruktur sollten idealerweise über Migrationen erfolgen, um die Konsistenz zu gewährleisten.
+*   **Spielstand-Speicherung:** Die persistente Speicherung des Spielerfortschritts ist entscheidend für ein ansprechendes Spielerlebnis.
+
+**Relevante Technologien:**
+
+*   JavaScript (ES6+)
+*   Node.js
+*   Express
+*   Sequelize
+*   PostgreSQL oder MySQL
+## Anweisungen für Deep Research
+
+Dieses Kapitel richtet sich an Bearbeiter, die das Ticket durch umfassende Recherche weiter ausführen sollen. Ziel ist es, alle notwendigen Informationen zu sammeln und zu dokumentieren, um das Ticket allumfassend zu gestalten.
+
+**Wichtige Aspekte:**
+
+*   **Vollständigkeit:** Stelle sicher, dass alle relevanten Informationen zum Thema recherchiert und dokumentiert werden.
+*   **Genauigkeit:** Überprüfe die recherchierten Informationen auf ihre Richtigkeit und Glaubwürdigkeit.
+*   **Bezüge:** Dokumentiere alle Bezüge zu anderen Tickets, Modulen, Klassen oder Funktionen im Projekt.
+*   **Kontext:** Stelle sicher, dass der Kontext der recherchierten Informationen klar und verständlich ist.
+*   **Programmiersprache:** Beachte die spezifischen Grundkonstrukte und Besonderheiten von JavaScript (ES6+) und Node.js.
+*   **Sequelize:** Recherchiere spezifische Sequelize-Funktionen und -Methoden, die im Ticket verwendet werden.
+*   **Datenbank:** Recherchiere datenbankspezifische Konzepte (z.B. Indizes, Transaktionen, Normalisierung), die für die Spielstand-Speicherung relevant sind.
+
+**Zu dokumentierende Informationen:**
+
+*   **Datenmodelle:** Beschreibe die Struktur der Datenmodelle (Tabellen, Spalten, Datentypen) und ihre Beziehungen zueinander.
+*   **Funktionen:** Dokumentiere die Funktionsweise der relevanten Funktionen und Methoden.
+*   **Klassen:** Beschreibe die Struktur und das Verhalten der relevanten Klassen.
+*   **Module:** Erkläre die Rolle und den Zweck der relevanten Module.
+*   **Konfiguration:** Dokumentiere alle relevanten Konfigurationseinstellungen.
+*   **Abhängigkeiten:** Liste alle Abhängigkeiten zu anderen Modulen, Klassen oder Funktionen auf.
+*   **Beispiele:** Füge Codebeispiele hinzu, um die Verwendung der recherchierten Konzepte zu veranschaulichen.
+*   **Ressourcen:** Verlinke auf externe Ressourcen (z.B. Dokumentationen, Tutorials, Blog-Artikel), die für das Thema relevant sind.
+
+**Grundkonstrukte der Programmiersprache (JavaScript/Node.js):**
+
+*   **Asynchrone Programmierung:** Verstehe die Konzepte von Promises, async/await und Callbacks.
+*   **Module:** Recherchiere, wie Module in Node.js verwendet werden (require, module.exports).
+*   **ES6+ Features:** Beachte moderne JavaScript-Features wie arrow functions, classes, destructuring und spread operator.
+
+
+
+**Ziel:**
+
+Das Ziel dieser Recherche ist es, ein umfassendes Verständnis des Themas zu erlangen und alle notwendigen Informationen zu dokumentieren, um das Ticket allumfassend zu gestalten und zukünftigen Bearbeitern die Arbeit zu erleichtern.
+
+---
+
+
+---
+
 # Ticket GS07: Client Spielstand Laden & Initialisierung
 
 **Ziel:** Anpassung der Haupt-Spiellogik (`game.js`), um beim Start (nach erfolgreicher Authentifizierung) den vollständigen Spielstand vom Server über die `/api/save/load`-Route abzurufen und die verschiedenen Spielmodule (Inventar, Pokémon, UI, Spielerposition etc.) mit diesen Daten zu initialisieren.
